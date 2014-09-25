@@ -1,1 +1,3 @@
-Notes de cours, preparation du projet, ressources
+Notes de cours, preparation du projet, ressources etc...
+
+Wiki : https://github.com/ISNJDA/infrastructure/wiki
