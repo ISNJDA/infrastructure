@@ -1,3 +1,3 @@
 Notes de cours, preparation du projet, ressources etc...
 
-Wiki : https://github.com/ISNJDA/infrastructure/wiki
+* [Wiki](https://github.com/ISNJDA/infrastructure/wiki)
