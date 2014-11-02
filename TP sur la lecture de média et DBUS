@@ -1,0 +1,73 @@
+# Introduction
+
+Afin de faire fonctionner notre visionneuse, nous allons devoir faire appel a des programmes externes déjà disponibles sous Linux. En effet, nous n'avons ni le temps ni l'expertise nécessaire pour implémenter notre propre lecteur de médias (que ce soit audio, vidéo ou graphique).
+Par contre il existe de nombreux programmes libres de très bonne qualité pour remplir ce genre de fonctions :
+
+* VLC (http://videolan.org) - Un lecteur multimédia libre écrit à l'Ecole Centrale de Paris.
+* GPicViewer - Un lecteur d'images installé sur le Raspberry Pi, fourni par le projet LXDE.
+
+## Installation de VLC
+
+VLC peut être installé avec la commande :
+
+```shell
+sudo apt-get install vlc
+# On peut tester VLC avec la video suivante par exemple :
+vlc medias/videos/bbb_trailer_400p.ogg
+```
+
+# Invocation de programmes
+
+Pour faire interagir deux programmes (par exemple, notre visionneuse et VLC), nous pouvons utiliser deux méthodes différentes : 
+1. Invoquer le programme par la ligne de commande - C'est une manière très simple de démarrer un programme en lui donnant des instructions. Par contre, une fois démarré, nous n'avons en général plus moyen de le piloter à distance. Si on prend l’idée d'un lecteur de vidéo, une fois démarré par ligne de commande, on ne peut pas mettre la vidéo en pause, revenir en arrière etc...
+2. Invoquer le programme par une interface distante (par exemple DBUS) - C'est une manière un peu plus compliquée, mais qui permet plus de contrôle. Par exemple, avec DBUS, on peut démarrer la lecture d'une vidéo dans VLC, puis demander à VLC de mettre en pause, d’accélérer la vitesse de lecture, d'afficher des sous-titres etc...
+
+Nous allons explorer les deux méthodes, mais nous utiliserons principalement la première (Invocation en ligne de commande).
+
+# Invocation en ligne de commande
+
+Pour démarrer un programme en ligne de commande, il suffit d'ouvrir un terminal et de taper la commande (par exemple, "python" ou "ls").
+Comme nous l'avons vu, nous pouvons demarrer **vlc** en tapant simplement 
+```shell
+cvlc
+# ou encore
+cvlc help   # pour afficher la liste des sous-commandes disponibles.
+```
+
+En python, nous pouvons invoquer un programme externe (ou un sous-processus "subprocess" en anglais) avec la fonction **os.execl()** :
+```python
+import subprocess
+subprocess.call(["ls"])  # <- On invoque la commande "ls"
+subprocess.call(["vlc","medias/videos/bbb_trailer_400p.ogg"]) # <- On demande a VLC de s'ouvrir pour lire la video
+```
+Remarquez que tant que nous n'avons pas ferme l'application VLC, notre script Python ne fait plus rien.
+Dans notre cas, nous voulons lancer la lecture d'une video, puis surveiller quand elle s'arrete pour passer a la suivante. Nous devons utiliser la fonction **subprocess.Popen()** ainsi :
+
+```python
+import subprocess
+
+# On donne à VLC deux vidéos à lire : la bande annonce, puis une commande 
+# spéciale pour demander à VLC de s’arrêter tout seul une fois la lecture terminée
+monProcessusVLC = subprocess.Popen(["vlc","medias/videos/bbb_trailer_400p.ogg", "vlc://quit"])
+
+monProcessusVLC.wait()  # On attend que la vidéo termine (mais on pourrait faire autre chose dans notre
+                        #   script en attendant).
+```
+
+Selon le même principe, on peut afficher une photo pendant 5 secondes, avec l'utilitaire **gpicviewer** :
+```python
+import subprocess
+from time import sleep
+
+monProcessusGPicViewer = subprocess.Popen(["gpicview","medias/photos/raspberrypi.jpg"])
+sleep(5)  # On attend 5 secondes...
+monProcessusGPicViewer.kill()  #  ... puis on termine le processus
+```
+
+# Invocation par DBUS
+
+D-BUS (http://fr.wikipedia.org/wiki/D-Bus) est un mode de communication Linux permettant à des applications d'échanger des données ou des commandes entre elles.
+
+D-BUS est utilisé sur Linux pour permettre aux programmes d'interagir, par exemple pour permettre au système d'exploitation de démarrer un navigateur internet ou une application de lecture audio ou vidéo.
+
+( A compléter )
