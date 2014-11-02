@@ -1,0 +1,131 @@
+# Introduction sur les métadonnées
+
+Une métadonnée est une donnée qui en décrit une autre. Un exemple type est d'associer à une donnée la date à laquelle elle a été produite ou enregistrée, ou à une photo les coordonnées GPS du lieu où elle a été prise.
+Pour lire un fichier binaire correctement, il est parfois nécessaire d'obtenir des métadonnées à propos de ce fichier. Par exemple, pour lire un fichier sonore correctement, il faut d'abord connaitre sa fréquence d’échantillonnage, obtenir ces métadonnées est donc essentiel.
+
+Certains fichiers contiennent déjà des métadonnées, qui sont en général ajoutées par l'appareil d'acquisition. Par exemple un appareil photo ou un smartphone ajoute automatiquement la date, l'heure, la position GPS, mais aussi d'autres informations qui peuvent être utiles pour retraiter l'image plus tard.
+
+Il existe de nombreux standards de métadonnées, en fait pratiquement chaque type de fichier définit ses propres informations, exprimées dans des unités différentes, dans un format différent.
+
+Heureusement il existe des bibliothèques Python (non standards) pour extraire automatiquement les métadonnées d'un fichier.
+
+Une bibliothèque intitulée **Hachoir** (https://bitbucket.org/haypo/hachoir/wiki/Home) fournit un package **hachoir-metadata** qui permet d'extraire facilement les métadonnées d'un grand nombre de fichiers.
+
+Comme **Hachoir** n'est pas standard, il est nécessaire d'installer le package
+
+```shell
+sudo apt-get install python-hachoir-metadata python-hachoir-parser python-hachoir-core # Pour installer sur debian / ubuntu
+```
+
+Ensuite, il est possible d'appeler la bibliothèque ainsi pour extraire les métadonnées d'une photo au format JPG :
+
+```python
+from hachoir_parser import createParser
+from hachoir_core.cmd_line import unicodeFilename
+from hachoir_core.tools import makePrintable
+from hachoir_core.i18n import getTerminalCharset
+from hachoir_metadata import extractMetadata
+
+filename = '/home/pi/IMG_2601.JPG'
+parser = createParser(unicodeFilename(filename), filename)
+metadata = extractMetadata(parser)
+print metadata
+```
+
+Ce script imprime alors par exemple : 
+
+```
+Metadata:
+- Image width: 600 pixels
+- Image height: 449 pixels
+- Bits/pixel: 24
+- Pixel format: YCbCr
+- Compression rate: 36.4x
+- Compression: JPEG (Baseline)
+- Comment: JPEG quality: 75%
+- Format version: JFIF 1.01
+- MIME type: image/jpeg
+- Endianness: Big endian
+```
+
+Le code est un peu compliqué mais il gère les noms de fichier au format UNICODE (un jeu de caractères universel qui couvre tous les signes connus, du mandarin au katakana en passant par l'alphabet latin, grec et arabe).
+
+## Accéder aux attributs des métadonnées Hachoir individuellement
+
+Il est possible d’accéder individuellement aux attributs de métadonnées d'un fichier, en les demandant par nom, comme dans l'exemple suivant :
+
+```python
+from hachoir_parser import createParser
+from hachoir_core.cmd_line import unicodeFilename
+from hachoir_core.tools import makePrintable
+from hachoir_core.i18n import getTerminalCharset
+from hachoir_metadata import extractMetadata
+
+filename = 'medias/photos/raspberrypi.jpg'
+metadata = extractMetadata(createParser(unicodeFilename(filename), filename))
+print metadata.getValues("width") # Pour accéder a la largeur d'une image exprimée en pixels
+print metadata.getValues("comment") # Pour accéder aux commentaires stockés dans l'image
+
+filename = 'medias/sons/hibou.mp3'
+metadata = extractMetadata(createParser(unicodeFilename(filename), filename))
+print (metadata.getValues("duration")) # Pour accéder a la durée d'une vidéo. 
+                                  # Attention, cette méthode retourne un objet timedelta 
+                                  # https://docs.python.org/2/library/datetime.html#datetime.timedelta
+delta = metadata.getValues("duration")
+print "Durée : "+str(delta.seconds)+" secondes"
+```
+
+Malheureusement cette méthode implique de savoir le type du fichier en question (un fichier audio aura une durée, mais pas un fichier image par exemple). Passons a la section suivante pour obtenir la liste complète des informations sans distinction de type de fichier.
+
+## Accéder à la liste de tous les attributs disponibles
+
+Il est possible de demander à Hachoir de nous donner la liste complète des attributs disponibles (libre à nous ensuite de nous en servir dans notre code).
+
+Par exemple : 
+```python
+from hachoir_parser import createParser
+from hachoir_core.cmd_line import unicodeFilename
+from hachoir_core.tools import makePrintable
+from hachoir_core.i18n import getTerminalCharset
+from hachoir_metadata import extractMetadata
+
+filename = 'medias/photos/raspberrypi.jpg'
+metadata = extractMetadata(createParser(unicodeFilename(filename), filename))
+
+print "Liste des metadonnees Hachoir pour '"+filename+"'"
+for value in metadata:
+    if(len(value.values)>0):
+        ligne = "  "
+        ligne += value.description+" : "
+        for v in value.values:
+          ligne += v.text
+        ligne += " ( Attribut hachoir : "+value.key+" )"
+        print ligne
+```
+
+# Types MIME
+
+Un type MIME est une forme de métadonnée très simple qui décrit le format d'un fichier.
+Sur le World Wide Web, il est aussi important de savoir quel est le type d'un fichier *avant* de le télécharger (par exemple il est inutile de télécharger une vidéo volumineuse si le terminal est incapable de jouer ce format vidéo).
+
+Quelques exemples de types MIME :
+* text/html : HTML
+* video/mp4 : vidéo MP4
+* image/jpeg : JPEG image JFIF
+
+Un type MIME est composé d'au moins deux parties : un type et un sous-type et d'un ou plusieurs autres champs au besoin. Par exemple, les sous-types du type *text* ont un champ optionnel **charset** indiquant le codage des caractères.
+
+Il existe aussi une bibliothèque Python standard intitulée **mimetypes** (https://docs.python.org/3.2/library/mimetypes.html) pour déterminer le type MIME d'un fichier.
+
+```python
+import mimetypes
+
+mimetypes.init()  # Initialise la bibliothèque, nécessaire avant le premier appel 
+mimetypes.guess_type("/home/pi/monScript.py") # -> retourne  ('text/x-python', None)
+mimetypes.guess_type("http://docs.python.org/3.2/_static/py.png") # -> retourne  ('image/png', None)
+mimetypes.guess_type("http://google.com/index.html") # -> retourne  ('text/html', None)
+```
+
+## Références
+
+* http://fr.wikipedia.org/wiki/Type_MIME
