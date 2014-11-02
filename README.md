@@ -50,3 +50,7 @@ Une fois le fichier **Visionneuse.py** complété, vous aurez une visionneuse qu
 Veuillez vous référer aux TP correspondants dans le wiki pour vous aider à compléter les exercices.
 
 * [Wiki](https://github.com/ISNJDA/infrastructure/wiki)
+* [[https://github.com/ISNJDA/infrastructure/wiki/TP-syst%C3%A8mes-de-fichier]]
+* [[https://github.com/ISNJDA/infrastructure/wiki/TP-m%C3%A9tadonn%C3%A9es-et-types-MIME]]
+* [[https://github.com/ISNJDA/infrastructure/wiki/TP-sur-la-lecture-de-m%C3%A9dia-et-DBUS]]
+* [[https://github.com/ISNJDA/infrastructure/wiki/TP-sur-les-formats-de-donn%C3%A9es-textuels]]
