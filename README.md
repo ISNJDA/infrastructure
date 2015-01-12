@@ -54,7 +54,7 @@ Veuillez vous référer aux TP correspondants dans le wiki pour vous aider à co
 * [TP métadonnées et types MIME](https://github.com/ISNJDA/infrastructure/wiki/TP-m%C3%A9tadonn%C3%A9es-et-types-MIME)
 * [TP sur la lecture de média et DBUS](https://github.com/ISNJDA/infrastructure/wiki/TP-sur-la-lecture-de-m%C3%A9dia-et-DBUS)
 * [TP sur les formats de données textuels](https://github.com/ISNJDA/infrastructure/wiki/TP-sur-les-formats-de-donn%C3%A9es-textuels)
-
+* [TP d'introduction sur Kivy](https://github.com/ISNJDA/infrastructure/wiki/TP-d%27introduction-sur-Kivy)
 
 
 
